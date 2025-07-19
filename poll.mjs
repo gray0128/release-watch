@@ -58,7 +58,7 @@ async function barkPush(title, body) {
     console.log(`Found ${list.length} repositories to check.`);
 
     for (const row of list) {
-      const { id, owner, repo, latest_tag } = row;
+      const { Id: id, owner, repo, latest_tag } = row;
       console.log(`\nChecking ${owner}/${repo}...`);
 
       console.log(
