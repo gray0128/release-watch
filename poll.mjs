@@ -1,4 +1,5 @@
 // poll.mjs
+console.log("Starting release poll script...");
 
 const NOCO_URL =
   "https://nocodb.987887.xyz/api/v2/tables/maat50ajcheeohw/records";
@@ -43,27 +44,65 @@ async function barkPush(title, body) {
 }
 
 (async () => {
-  const { list } = await nocodb("GET");
-  for (const row of list) {
-    const { id, owner, repo, latest_tag } = row;
-    const release = await githubLatest(owner, repo);
-    if (!release) continue; // 仓库无 release
-    if (release.tag_name === latest_tag) continue;
+  try {
+    console.log("Checking for required environment variables...");
+    if (!NOCO_TOKEN || !BARK_KEY || !GH_TOKEN) {
+      throw new Error(
+        "Missing one or more required environment variables: NOCODB_TOKEN, BARK_KEY, GH_TOKEN",
+      );
+    }
+    console.log("Environment variables seem OK.");
 
-    // 推送到 Bark
-    const title = `${owner}/${repo} 发布了 ${release.tag_name}`;
-    const body = (release.name || release.body || "").slice(0, 120);
-    await barkPush(title, body);
+    console.log("Fetching watchlist from NocoDB...");
+    const { list } = await nocodb("GET");
+    console.log(`Found ${list.length} repositories to check.`);
 
-    // 更新 NocoDB 记录
-    await nocodb("PATCH", {
-      records: [
-        {
-          id,
-          latest_tag: release.tag_name,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-    });
+    for (const row of list) {
+      const { id, owner, repo, latest_tag } = row;
+      console.log(`\nChecking ${owner}/${repo}...`);
+
+      console.log(
+        `Fetching latest release from GitHub for ${owner}/${repo}...`,
+      );
+      const release = await githubLatest(owner, repo);
+
+      if (!release) {
+        console.log(`No releases found for ${owner}/${repo}. Skipping.`);
+        continue;
+      }
+
+      console.log(
+        `Latest release tag is ${release.tag_name}. Previously seen tag was ${latest_tag || "none"}.`,
+      );
+      if (release.tag_name === latest_tag) {
+        console.log("No new release. Skipping.");
+        continue;
+      }
+
+      console.log(`New release found! Tag: ${release.tag_name}.`);
+      const title = `${owner}/${repo} a new version ${release.tag_name}`;
+      const body = (release.name || release.body || "").slice(0, 120);
+
+      console.log("Sending Bark notification...");
+      await barkPush(title, body);
+      console.log("Bark notification sent.");
+
+      console.log("Updating NocoDB with the new tag...");
+      await nocodb("PATCH", {
+        records: [
+          {
+            id,
+            latest_tag: release.tag_name,
+            updated_at: new Date().toISOString(),
+          },
+        ],
+      });
+      console.log("NocoDB updated successfully.");
+    }
+    console.log("\nPoll script finished successfully.");
+  } catch (error) {
+    console.error("An error occurred during script execution:");
+    console.error(error);
+    process.exit(1); // Explicitly exit with a failure code
   }
 })();
