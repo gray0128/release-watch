@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Release 监控</title>
+  <style>
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;max-width:600px;margin:auto;padding:1rem;background:#f5f5f5}
+    h1,h2{color:#333}
+    input,button{padding:.6rem;font-size:1rem;width:100%;box-sizing:border-box;margin:.25rem 0;border:1px solid #ccc;border-radius:4px}
+    button{background:#007bff;color:#fff;border:none;cursor:pointer}
+    button:hover{background:#0069d9}
+    ul{list-style:none;padding:0}
+    li{background:#fff;border:1px solid #ddd;margin:.5rem 0;padding:.75rem;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    .tag{color:#28a745;font-weight:bold}
+    .time{color:#6c757d;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <h1>添加仓库</h1>
+  <input id="repo" placeholder="owner/repo">
+  <button onclick="add()">添加</button>
+
+  <h2>监控列表</h2>
+  <ul id="list">加载中…</ul>
+
+  <script>
+  const NOCO_URL  = 'https://nocodb.987887.xyz/api/v2/tables/maat50ajcheeohw/records';
+  const NOCO_TOKEN = prompt('请输入 NocoDB Token（仅首次）');
+  const headers = { 'xc-token': NOCO_TOKEN, 'Content-Type': 'application/json' };
+
+  async function add() {
+    const [owner, repo] = document.getElementById('repo').value.trim().split('/');
+    if (!owner || !repo) return alert('格式 owner/repo');
+    const body = JSON.stringify({ owner, repo, latest_tag: '', updated_at: new Date().toISOString() });
+    await fetch(NOCO_URL, { method: 'POST', headers, body });
+    load();
+  }
+
+  async function load() {
+    const res = await fetch(NOCO_URL, { headers });
+    const { list } = await res.json();
+    const ul = document.getElementById('list');
+    ul.innerHTML = list.length
+      ? list.map(r=>`
+          <li>
+            <strong>${r.owner}/${r.repo}</strong><br>
+            <span class="tag">${r.latest_tag || '—'}</span>
+            <span class="time">${new Date(r.updated_at).toLocaleString()}</span>
+          </li>`).join('')
+      : '<li>暂无监控仓库</li>';
+  }
+  load();
+  </script>
+</body>
+</html>
