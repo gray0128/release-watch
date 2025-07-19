@@ -1,15 +1,16 @@
 // poll.mjs
 console.log("Starting release poll script...");
 
-const NOCO_URL =
+const NOCO_BASE_URL =
   "https://nocodb.987887.xyz/api/v2/tables/maat50ajcheeohw/records";
 const NOCO_TOKEN = process.env.NOCODB_TOKEN;
 const BARK_KEY = process.env.BARK_KEY;
 const GH_TOKEN = process.env.GH_TOKEN;
 
 // 统一封装 NocoDB 请求
-async function nocodb(method, body) {
-  const res = await fetch(NOCO_URL, {
+async function nocodb(method, body, recordId = null) {
+  const url = recordId ? `${NOCO_BASE_URL}/${recordId}` : NOCO_BASE_URL;
+  const res = await fetch(url, {
     method,
     headers: {
       "xc-token": NOCO_TOKEN,
@@ -88,15 +89,14 @@ async function barkPush(title, body) {
       console.log("Bark notification sent.");
 
       console.log("Updating NocoDB with the new tag...");
-      await nocodb("PATCH", {
-        records: [
-          {
-            id,
-            latest_tag: release.tag_name,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-      });
+      await nocodb(
+        "PATCH",
+        {
+          latest_tag: release.tag_name,
+          updated_at: new Date().toISOString(),
+        },
+        id,
+      );
       console.log("NocoDB updated successfully.");
     }
     console.log("\nPoll script finished successfully.");
