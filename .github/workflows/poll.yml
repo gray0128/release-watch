@@ -23,16 +23,3 @@ jobs:
           NOCODB_TOKEN: ${{ secrets.NOCODB_TOKEN }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ # 将当前目录（包含 data.json）作为发布目录
-          # 注意：这里假设您的 GitHub Pages 是从 gh-pages 分支部署的
-          # 如果您是从 main 分支的 /docs 目录部署，请相应修改
-          publish_branch: gh-pages
-          # 只推送 data.json，不删除分支上已有的 index.html 等文件
-          keep_files: true
-          # 提交信息
-          commit_message: "chore: Update release data"
