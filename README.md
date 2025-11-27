@@ -96,6 +96,9 @@ npx wrangler secret put BARK_KEY
 
 npx wrangler secret put GH_TOKEN
 # 输入你的 GitHub Token
+
+npx wrangler secret put BARK_SERVER
+# 输入你的 Bark 服务器地址 (例如: https://bark.example.com)
 ```
 
 ### 7. 部署
