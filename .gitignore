@@ -27,3 +27,6 @@ npm-debug.log
 dist/
 worker/
 
+# Debug documents
+调试过程.md
+
