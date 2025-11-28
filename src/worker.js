@@ -62,10 +62,11 @@ async function checkReleases(env) {
             console.log("Bark notification sent.");
 
             console.log("Updating D1 with the new tag...");
+            const releaseTime = release.published_at || release.created_at;
             await env.DB.prepare(
-                "UPDATE repos SET latest_tag = ?, updated_at = ? WHERE id = ?"
+                "UPDATE repos SET latest_tag = ?, latest_release_at = ?, updated_at = ? WHERE id = ?"
             )
-                .bind(release.tag_name, new Date().toISOString(), id)
+                .bind(release.tag_name, releaseTime, new Date().toISOString(), id)
                 .run();
             console.log("D1 updated successfully.");
         } catch (err) {

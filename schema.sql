@@ -4,6 +4,7 @@ CREATE TABLE repos (
   owner TEXT NOT NULL,
   repo TEXT NOT NULL,
   latest_tag TEXT,
+  latest_release_at TEXT,
   updated_at TEXT,
   UNIQUE(owner, repo)
 );
