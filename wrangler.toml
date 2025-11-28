@@ -15,3 +15,18 @@ database_id = "f7ebd7c8-8954-42c8-a65d-142c5c8c6788"
 # [vars]
 # BARK_KEY = "..."
 # GH_TOKEN = "..."
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
