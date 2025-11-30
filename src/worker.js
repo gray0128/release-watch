@@ -16,8 +16,14 @@ async function githubLatest(owner, repo, env) {
 
 // 发送 Bark 推送
 async function barkPush(title, body, env) {
-    const server = env.BARK_SERVER || "https://api.day.app"; // Default to official server if not set, or throw error? User wants to hide their domain, so likely custom. Let's just use the env.
-    const url = `${env.BARK_SERVER}/${env.BARK_KEY}/${encodeURIComponent(title)}/${encodeURIComponent(body)}`;
+    const server = env.BARK_SERVER;
+    if (!server) {
+        console.error("BARK_SERVER is not set");
+        return;
+    }
+    const cleanServer = server.replace(/\/$/, "");
+    const url = `${cleanServer}/${env.BARK_KEY}/${encodeURIComponent(title)}/${encodeURIComponent(body)}`;
+    console.log(`Pushing to Bark: ${cleanServer}/...`);
     const res = await fetch(url);
     if (!res.ok) console.warn("Bark push failed", res.status);
 }
